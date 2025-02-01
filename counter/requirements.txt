@@ -1,0 +1,6 @@
+Django==4.2
+opencv-python==4.8.1.78
+numpy==1.23.5
+ultralytics==8.0.195
+djangorestframework==3.14.0
+pillow==10.0.1

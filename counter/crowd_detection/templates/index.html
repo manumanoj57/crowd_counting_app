@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crowd Counting</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+        }
+        .container {
+            margin-top: 20px;
+        }
+        #video-stream, #uploaded-image {
+            width: 100%;
+            max-width: 100%;
+            border: 3px solid #333;
+            border-radius: 10px;
+            display: none;
+        }
+        #count {
+            font-size: 24px;
+            font-weight: bold;
+            color: red;
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+        .btn-live {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-image {
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Real-Time Crowd Counting System</h1>
+
+    <div class="container">
+        <button class="btn btn-live" onclick="startLiveStream()">Live Video</button>
+        <button class="btn btn-image" onclick="uploadImage()">Upload Image</button>
+    </div>
+
+    <!-- Video Stream -->
+    <img id="video-stream" src="/crowd_detection/video_feed/" alt="Live Stream">
+
+    <!-- Image Upload Form -->
+    <form id="image-form" style="display:none;" enctype="multipart/form-data">
+        <input type="file" id="image-input" accept="image/*">
+        <button type="button" class="btn btn-image" onclick="submitImage()">Analyze Image</button>
+    </form>
+
+    <!-- Display Uploaded Image -->
+    <img id="uploaded-image" src="" alt="Uploaded Image">
+
+    <!-- People Count -->
+    <p id="count">People Count: 0</p>
+
+    <script>
+        function startLiveStream() {
+            document.getElementById('video-stream').style.display = 'block';
+            document.getElementById('uploaded-image').style.display = 'none';
+            document.getElementById('image-form').style.display = 'none';
+            setInterval(updatePeopleCount, 1000);
+        }
+
+        function uploadImage() {
+            document.getElementById('image-form').style.display = 'block';
+            document.getElementById('video-stream').style.display = 'none';
+            document.getElementById('uploaded-image').style.display = 'none';
+        }
+
+        function submitImage() {
+            let input = document.getElementById('image-input');
+            if (input.files.length === 0) {
+                alert("Please select an image.");
+                return;
+            }
+
+            let formData = new FormData();
+            formData.append("image", input.files[0]);
+
+            fetch("/crowd_detection/process_image/", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                
+               
+                document.getElementById('count').innerText = `People Count: ${data.count}`;
+            })
+            .catch(error => console.error("Error:", error));
+        }
+
+        function updatePeopleCount() {
+            fetch('/crowd_detection/get_people_count/')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('count').innerText = `People Count: ${data.count}`;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>
